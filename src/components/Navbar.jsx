@@ -16,29 +16,38 @@ const Navbar = (props) => {
   return (
     
 
-    <div className='navbar navbar-danger bg-danger' id="Nava">
+   
+    <nav class="navbar navbar-danger bg-danger">
+       <div class="container-fluid">
         <Link className='navbar-brand' to="/"><img src="./public/cucLogo.png" width="40" height="40" ></img></Link>
-      
-        <div className='d-flex'>
+
+        <div className='d-flex '>
             <Link className='btn btn-danger' to="/">Inicio</Link>
             
-            {
-                props.firebaseUser !==null ?
-                (<Link className='btn btn-danger' to="/admin">Admin</Link>):
-                null
-            }
-            {
-                props.firebaseUser !==null ?(
-                    <button className='btn btn-danger'
-                    onClick={cerrarsesion}
-                    >Cerrar Sesión</button>
-                ):(
-                    <Link className='btn btn-danger' to="/login">Login</Link>
-                )
-            }
+            {props.firebaseUser !== null ? (
+          <Link className='btn btn-danger' to="/admin">Admin</Link>
+        ) : null}
+
+        {props.firebaseUser !== null  ? (
+          <Link className='btn btn-danger' to="/reservas">Libros Disponibles</Link>
+        ) : null}
+
+        {props.firebaseUser !== null  ? (
+          <Link className='btn btn-danger' to="/Misreservas">Mis pedidos</Link>
+        ) : null}
+
+        {
+          props.firebaseUser !== null ? (
+            <button className='btn btn-danger iniciar-cerrarsesion'
+              onClick={cerrarsesion}
+            >Cerrar Sesión</button>
+          ) : (
+            <Link className='btn btn-danger' to="/login">Login</Link>
+          )
+        }
         </div>
-      
-    </div>
+        </div>
+        </nav>
   )
 }
 

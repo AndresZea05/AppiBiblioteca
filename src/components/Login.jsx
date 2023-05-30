@@ -64,6 +64,7 @@ const Login = () => {
             setEmail('')
             setPass('')
             setError('')
+            navigate('/admin')
         } catch (error) {
             console.log(error.code);
             if (error.code==='auth/invalid-email') {
@@ -77,12 +78,14 @@ const Login = () => {
         
 
   return (
-    <div class="containerLogin">
-        <h3 className='text-center text-primary'>
-            {modoRegistro ? 'Registro de Usuarios': 'Login'}
-            </h3>
-        <div className='row justify-content-center'>
-        <div className='col-12 col-sm-8 col-md-6 col-xl-4'>
+    <div className="container">
+      <div className="row justify-content-center mt-5">
+        <div className="col-md-6">
+          <div className="card shadow-lg">
+            <div className="card-header bg-danger text-white text-center">
+              <h5 className="card-title mb-0">Iniciar sesión</h5>
+            </div>
+            <div className="card-body">
             <form onSubmit={guardarDatos}>
                 {
                     error && (
@@ -102,12 +105,12 @@ const Login = () => {
                 onChange={e=>setPass(e.target.value.trim())}
                 />
                 <div className='d-grid gap-2'>
-                    <button className='btn btn-outline-dark'>
+                    <button className='btn btn-outline-danger'>
                         {
                             modoRegistro ? 'Registrarse' :'Acceder'
                         }
                     </button>
-                    <button className='btn btn-outline-primary'
+                    <button className='btn btn-outline-dark'
                     onClick={()=>{setModoRegistro(!modoRegistro)}}
                     type='button'
                     >
@@ -117,9 +120,12 @@ const Login = () => {
                     </button>
                 </div>
             </form>
+            </div>
+          </div>
         </div>
-        </div>
-    </div>
+      </div>
+      </div>
+      
   )
 }
 

@@ -1,153 +1,267 @@
 import React from 'react'
 import { db } from '../firebase'
 
-const Registro = (props) => {
-    //hooks
-  const [lista,setLista]=React.useState([])
-  const [nombre,setNombre]=React.useState('')
-  
-  const [id,setId]=React.useState('')
-  const [modoedicion,setModoEdicion]=React.useState(false)
-  const [error,setError]=React.useState(null)
+const Registro = () => {
+  //hooks
+  const [lista, setLista] = React.useState([])
+  const [nombre, setNombre] = React.useState('')
+  const [Descripcion, setDescripcion] = React.useState('');
+  const [Disponibilidad, setDisponibilidad] = React.useState(true);
+  const [año, setAño] = React.useState('');
+  const [Autor, setAutor] = React.useState('');
+  const [id, setId] = React.useState('');
+  const [busqueda, setBusqueda] = React.useState('');
+
+  const [modoedicion, setModoEdicion] = React.useState(false)
+
+  const [error, setError] = React.useState(null)
+
   //leer datos
-  React.useEffect(()=>{
-    const obtenerDatos=async()=>{
+  React.useEffect(() => {
+    const obtenerDatos = async () => {
       try {
-        //const db=firebase.firestore()
-        const data=await db.collection(props.user.email).get()
-        //console.log(data.docs);
-        const arrayData=data.docs.map(doc=>({id:doc.id,...doc.data()}))
+        const data = await db.collection('Libros').get()
+        const arrayData = data.docs.map(doc => ({ id: doc.id, ...doc.data() }))
         setLista(arrayData)
       } catch (error) {
         console.error(error);
       }
     }
     obtenerDatos()
-  },[])
+  }, [])
+
   //guardar
-  const guardarDatos=async(e)=>{
+  const guardarDatos = async (e) => {
     e.preventDefault()
     if (!nombre) {
-      setError("Ingrese el Nombre del libro")
+      setError("Ingrese el Nombre")
+      return
+    }
+    if (!Autor) {
+      setError("Ingrese el Autor")
+      return
+    }
+    if (!Descripcion) {
+      setError("Ingrese la Descripcion")
+      return
+    }
+    if (!año) {
+      setError("Ingrese el año")
       return
     }
 
     //registrar en firebase
     try {
-        //const db=firebase.firestore()
-        const nuevoUsuario={nombre}
-        const dato=await db.collection(props.user.email).add(nuevoUsuario)
-        setLista([
-          ...lista,
-          {...nuevoUsuario,id:dato.id}
-        ])
-        setNombre('')
-        
-        setError(null)
+      const dato = await db.collection('Libros').add({
+        Nombre: nombre,
+        Disponibilidad: true,
+        Descripcion: Descripcion,
+        año: año,
+        Autor: Autor,
+      })
+      setLista([
+        ...lista,
+        {
+          Nombre: nombre,
+          Disponibilidad: true,
+          Descripcion: Descripcion,
+          año: año,
+          Autor: Autor,
+          id: dato.id
+        }
+      ])
+
+      //! ALERTA QUE EL LIBRO SE HA REGISTRADO CON EXITO
+      setNombre('')
+      setAutor('')
+      setDescripcion('')
+      setAño('')
+      setError(null)
     } catch (error) {
       console.error(error);
     }
   }
-  //eliminar
-  
-  const eliminarDato=async(id)=>{
+
+
+  const eliminarDato = async (id) => {
     if (modoedicion) {
-      setError('No puede eliminar mientras edita el nombre del libro.') 
+      setError('No puede eliminar mientras edita el usuario.')
       return
-     }
+    }
     try {
-        //const db=firebase.firestore()
-        await db.collection(props.user.email).doc(id).delete()
-        const listaFiltrada=lista.filter(elemento=>elemento.id!==id)
-        setLista(listaFiltrada)
+      //const db=firebase.firestore()
+      await db.collection('Libros').doc(id).delete()
+      const listaFiltrada = lista.filter(elemento => elemento.id !== id)
+      //!ALERTA DE QUE EL LIBRO SE HA ELIMINADO CON EXITO
+      setLista(listaFiltrada)
     } catch (error) {
       console.error(error);
     }
   }
+
+
   //editar
-  const editar=(elemento)=>{
+
+
+  const editar = (elemento) => {
     setModoEdicion(true)//activamos el modo edición
-    setNombre(elemento.nombre)
-    
-    setId(elemento.id)
+    setNombre(elemento.Nombre);
+    setAutor(elemento.Autor);
+    setDescripcion(elemento.Descripcion);
+    setAño(elemento.año);
+    setId(elemento.id);
+    setDisponibilidad(elemento.Disponibilidad);
   }
-//editar datos
-const editarDatos=async(e)=>{
-  e.preventDefault()
+
+  //editar datos
+
+  const editarDatos = async (e) => {
+    e.preventDefault()
     if (!nombre) {
-      setError("Ingrese el Nombre del libro")
+      setError("Ingrese el Nombre")
       return
     }
-    
+    if (!Autor) {
+      setError("Ingrese el Autor")
+      return
+    }
+    if (!Descripcion) {
+      setError("Ingrese la Descripcion")
+      return
+    }
+    if (!año) {
+      setError("Ingrese el año")
+      return
+    }
     try {
-        //const db=firebase.firestore()
-        await db.collection(props.user.email).doc(id).update({
-          nombre
-        })
-        const listaEditada=lista.map(elemento=>elemento.id===id ? {id,nombre} : 
-          elemento
-          )
-          setLista(listaEditada)//listamos nuevos valores
-          setModoEdicion(false)
-          setNombre('')
-        
-          setId('')
-          setError(null)
+
+      await db.collection('Libros').doc(id).update({
+        Nombre: nombre,
+        Disponibilidad: Disponibilidad,
+        Descripcion: Descripcion,
+        año: año,
+        Autor: Autor,
+      })
+      //! ALERTA DE QUE EL LIBRO SE HA EDITADO.
+      const listaEditada = lista.map(elemento => elemento.id === id ? { id, Nombre: nombre, Disponibilidad, Autor, Descripcion, año } : elemento
+      )
+
+      setLista(listaEditada); //listamos nuevos valores
+      setModoEdicion(false);
+      setAutor('');
+      setDescripcion('');
+      setAño('');
+      setId('');
+      setNombre('');
+      setError(null);
     } catch (error) {
       console.error(error);
     }
-}
+  }
+
+  const BuscarLibro = (e) => {
+    setBusqueda(e.target.value);
+  };
+
+  
+  const listaFiltrada = lista.filter((elemento) =>
+  elemento.Nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
-    <div className='container'>
+    <div className='Registro-libro'>
       {
-        modoedicion ? <h2 className='text-center text-success'>Edicion de libros</h2> :
-        <h2 className='text-center text-primary'>Regristro de pedidos</h2>
+        modoedicion ? <h2 className='text-center text-success'>Editando Libro</h2> :
+          <h2 className='text-center text-primary'>Registro Libros</h2>
       }
-      
+
       <form onSubmit={modoedicion ? editarDatos : guardarDatos}>
         {
           error ? (
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
-          ):
-          null
+          ) :
+            null
         }
-      
-
-        <input type="textarea" 
-        placeholder='Ingrese el Nombre del libro'
-        className='form-control mb-2'
-        onChange={(e)=>{setNombre(e.target.value.trim())}}
-        value={nombre}
+        <input type="text"
+          placeholder='Ingrese el Nombre'
+          className='form-control mb-2'
+          onChange={(e) => { setNombre(e.target.value) }}
+          value={nombre}
         />
-        
+
+
+        <input type="text"
+          placeholder='Ingrese el autor'
+          className='form-control mb-2'
+          onChange={(e) => { setAutor(e.target.value) }}
+          value={Autor}
+        />
+
+        <input type="text"
+          placeholder='Ingrese la Descripción'
+          className='form-control mb-2'
+          onChange={(e) => { setDescripcion(e.target.value) }}
+          value={Descripcion}
+        />
+
+        <input type="number"
+          placeholder='Ingrese el año'
+          className='form-control mb-2'
+          onChange={(e) => { setAño(e.target.value.trim()) }}
+          value={año}
+        />
+
         <div className='d-grid gap-2'>
           {
             modoedicion ? <button type='submit' className='btn btn-outline-success'>Editar</button> :
-            <button type='submit' className='btn btn-outline-info'>Solicitar</button>
+              <button type='submit' className='btn btn-outline-info'>Registrar</button>
           }
-          
+
         </div>
       </form>
-      <h2 className='text-center text-primary'>Listado de solucitudes</h2>
-      <ul className='list-group'>
-        {
-          lista.map(
-            (elemento)=>(
-              <li className='list-group-item bg-info' key={elemento.id}>
-                {elemento.nombre} 
-                <button 
-                onClick={()=>eliminarDato(elemento.id)}
-                className='btn btn-danger float-end me-2'>Eliminar</button>
-                <button 
-                onClick={()=>editar(elemento)}
-                className='btn btn-warning float-end me-2'>Editar</button>
-                </li>
-            )
-          )
-        }
-      </ul>
+
+      <h2 className='text-center'>Listado de Libros Registrados</h2>
+
+      <div className="busqueda">
+        <input
+          className='form-control'
+          type="text"
+          placeholder="Buscar libro"
+          value={busqueda}
+          onChange={BuscarLibro}
+        />
+      </div>
+      
+      
+      <div className="contenedor-cards">
+        <div className="card-grid">
+          {listaFiltrada.map((elemento) => (
+            <div className="card" key={elemento.id}>
+              <div className="card-body">
+                <h5 className="card-title">Nombre: {elemento.Nombre}</h5>
+                <p className="card-text">Autor: {elemento.Autor}</p>
+                <p className="card-text">Descripción: {elemento.Descripcion}</p>
+                <p className="card-text">Año: {elemento.año}</p>
+                <p className="card-text">Estado: {elemento.Disponibilidad ? "Disponible" : "Reservado"}</p>
+              </div>
+              <div className="card-footer">
+                <button onClick={() => eliminarDato(elemento.id)} className="btn btn-danger me-2">
+                  Eliminar
+                </button>
+                <button onClick={() => editar(elemento)} className="btn btn-warning me-2">
+                  Editar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
+
+
     </div>
   )
 }

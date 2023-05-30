@@ -1,47 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { BrowserRouter as Router,
-  Routes,Route
-  } from 'react-router-dom'
-import Inicio from './components/Inicio'
-import Login from './components/Login'
-import Admin from './components/Admin'
-import Navbar from './components/Navbar'
-import { auth } from './firebase'
-import React from 'react'
+import { useState, useEffect, useCallback } from 'react';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Inicio from './components/Inicio';
+import Login from './components/Login';
+import Admin from './components/Admin';
+import Navbar from './components/Navbar';
+import Reservas from './components/Reservas';
+import { auth, db } from './firebase';
+import MisReservas from './components/MisReservas';
+
 
 function App() {
-const [firebaseUser,setFirebaseUser]=React.useState(false)
-React.useEffect(()=>{
-  auth.onAuthStateChanged(user=>{
-    console.log(user);
-    if (user) {
-      setFirebaseUser(user)
-    } else {
-      setFirebaseUser(null)
-    }
-  })
-},[])
+  const [firebaseUser, setFirebaseUser] = useState(false);
+  const [firebaseRol, setFirebaseRol] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  return firebaseUser !==false ? (
+  const getRole = useCallback(async (Mail) => {
+    try {
+      const userSnapshot = await db.collection('Usuarios').doc(Mail).get();
+      const userData = userSnapshot.data();
+      if (userData && userData.Rol === 'Usuario') {
+        return 'Usuario';
+      } else if (userData && userData.Rol === 'Admin') {
+        return 'Admin';
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      auth.onAuthStateChanged(async (user) => {
+        console.log(user);
+        if (user) {
+          setFirebaseUser(user);
+          const role = await getRole(user.email);
+          setFirebaseRol(role);
+        } else {
+          setFirebaseUser(null);
+        }
+        setLoading(false); // Indica que la carga ha finalizado
+      });
+    };
+
+    checkUser();
+  }, [getRole]);
+
+  if (loading) {
+    return <div class="custom-loader"></div>; // Muestra un mensaje de carga mientras se verifica el usuario y se obtiene su rol
+  }
+
+  console.log('El rol es: ' + firebaseRol);
+
+  return firebaseUser !== false ? (
     <Router>
-      <div className='container'>
-        <Navbar firebaseUser={firebaseUser}/>
+      <div className=''>
+        <Navbar firebaseUser={firebaseUser} firebaseRol={firebaseRol} />
         <Routes>
-          <Route path='/' element={<Inicio/>}/>
-          <Route path='login' element={<Login/>}/>
-          <Route path='admin' element={<Admin/>}/>
+          <Route path='/' element={<Inicio />} />
+          <Route path='login' element={<Login />} />
+          <Route path='admin' element={<Admin firebaseRol={firebaseRol} />} />
+          <Route path='reservas' element={<Reservas />} />
+          <Route path='Misreservas' element={<MisReservas />} />
         </Routes>
         
       </div>
-
     </Router>
-
-    
-  ):
-  (<p>Loading...</p>)
+  ) : (
+    <div class="custom-loader"></div>
+  );
 }
 
-export default App
+export default App;
